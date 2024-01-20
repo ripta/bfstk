@@ -1,6 +1,7 @@
 use snafu::prelude::*;
 use std::io::Read;
 use std::result;
+use std::time::Instant;
 
 fn main() {
     let flags = parse_args();
@@ -40,21 +41,34 @@ fn parse_args() -> Result<Flags> {
 
 fn run(flags: Flags) -> Result<u8> {
     for filename in flags.files {
+        let mut ts = vec![("start", Instant::now())];
+
         let content = std::fs::read_to_string(filename.clone()).context(FileLoadSnafu {
             filename: filename.clone(),
         })?;
+        ts.push(("read", Instant::now()));
+
         let tokens = lex(content)?;
+        ts.push(("lex", Instant::now()));
+
         let nodes = parse(tokens)?;
+        ts.push(("parse", Instant::now()));
 
         let mut state = State::new();
         for node in nodes {
             state = eval(state, node)?;
         }
+        ts.push(("eval", Instant::now()));
 
         if flags.with_report {
             eprintln!("State:");
             eprintln!("  counter: {}", state.counter);
             eprintln!("  memory: {} {}", state.data_left.len(), state.data_right.len());
+
+            eprintln!("Timings:");
+            for t in ts.windows(2) {
+                eprintln!("  {}: {:.2?}", &t[1].0, &t[1].1.duration_since(t[0].1));
+            }
         }
     }
 
