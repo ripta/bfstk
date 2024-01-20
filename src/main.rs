@@ -20,11 +20,15 @@ type Result<T> = result::Result<T, BFE>;
 #[derive(Debug)]
 struct Flags {
     files: Vec<String>,
+    with_report: bool,
 }
 
 fn parse_args() -> Result<Flags> {
-    let args = pico_args::Arguments::from_env();
-    let mut flags = Flags { files: Vec::new() };
+    let mut args = pico_args::Arguments::from_env();
+    let mut flags = Flags {
+        files: Vec::new(),
+        with_report: args.contains("-r"),
+    };
 
     let rem = args.finish();
     if !rem.is_empty() {
@@ -47,9 +51,11 @@ fn run(flags: Flags) -> Result<u8> {
             state = eval(state, node)?;
         }
 
-        eprintln!("State:");
-        eprintln!("  counter: {}", state.counter);
-        eprintln!("  memory: {} {}", state.data_left.len(), state.data_right.len());
+        if flags.with_report {
+            eprintln!("State:");
+            eprintln!("  counter: {}", state.counter);
+            eprintln!("  memory: {} {}", state.data_left.len(), state.data_right.len());
+        }
     }
 
     return Ok(0);
