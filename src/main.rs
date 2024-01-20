@@ -286,19 +286,11 @@ fn eval(mut state: State, node: Node) -> Result<State> {
 
         Node::Delta(i) if state.pointer < 0 => {
             state.counter += 1;
-            if i < 0 {
-                state.data_left[-state.pointer as usize] -= (-i) as u8;
-            } else {
-                state.data_left[-state.pointer as usize] += i as u8;
-            }
+            state.data_left[-state.pointer as usize] = state.data_left[-state.pointer as usize].wrapping_add_signed(i)
         }
         Node::Delta(i) => {
             state.counter += 1;
-            if i < 0 {
-                state.data_right[state.pointer as usize] -= (-i) as u8;
-            } else {
-                state.data_right[state.pointer as usize] += i as u8;
-            }
+            state.data_right[state.pointer as usize] = state.data_right[state.pointer as usize].wrapping_add_signed(i);
         }
 
         Node::Move(i) => {
