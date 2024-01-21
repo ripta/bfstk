@@ -21,6 +21,7 @@ type Result<T> = result::Result<T, BFE>;
 #[derive(Debug)]
 struct Flags {
     files: Vec<String>,
+    with_memdump: bool,
     with_report: bool,
 }
 
@@ -28,6 +29,7 @@ fn parse_args() -> Result<Flags> {
     let mut args = pico_args::Arguments::from_env();
     let mut flags = Flags {
         files: Vec::new(),
+        with_memdump: args.contains("-d"),
         with_report: args.contains("-r"),
     };
 
@@ -69,6 +71,11 @@ fn run(flags: Flags) -> Result<u8> {
             for t in ts.windows(2) {
                 eprintln!("  {}: {:.2?}", &t[1].0, &t[1].1.duration_since(t[0].1));
             }
+        }
+        if flags.with_memdump {
+            eprintln!("Memory dump:");
+            eprintln!(" left: {:?}", state.data_left);
+            eprintln!(" left: {:?}", state.data_right);
         }
     }
 

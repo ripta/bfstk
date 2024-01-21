@@ -19,3 +19,6 @@ cargo build --release
 ```
 
 Run with `-r` to show a summary report of the state after execution.
+
+Run with `-d` to dump the left (negative space) and right (positive space)
+memory blocks after execution.
